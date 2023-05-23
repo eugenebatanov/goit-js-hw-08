@@ -1,71 +1,41 @@
-var throttle = require('lodash.throttle');
-
-const form = document.querySelector('form');
-const input = document.querySelector('input');
-const textarea = document.querySelector('textarea');
+import throttle from 'lodash.throttle';
 
 const STORAGE_KEY = 'feedback-form-state';
-
-const formData = {
-  email: '',
-  message: '',
-};
+const form = document.querySelector('form');
+const formData = {};
 
 inputData();
 
-console.log(form);
-// console.log(formData);
 form.addEventListener('input', throttle(inputEvent, 500));
 form.addEventListener('submit', submitEvent);
 
-function inputEvent(event) {
-  // console.log(event);
-  // console.log(event.target.name);
-  // console.log(event.type);
-  // console.log(event.currentTarget);
-  if (event.target.name === 'email') {
-    // console.log('target: ', event.target);
-    // console.log('value: ', event.target.value);
-    // console.log("You've just pressed email area");
-    formData.email = event.target.value;
-    // console.log(formData);
-    // localStorage.setItem(FORM_STATE.email, event.target.value);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-  } else if (event.target.name === 'message') {
-    // console.log('target: ', event.target);
-    // console.log('value: ', event.target.value);
-    // console.log("You've just pressed message area");
-    formData.message = event.target.value;
-    // console.log(formData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-  } else {
-    console.log('Something went wrong!');
-  }
+function inputEvent(evt) {
+  formData[evt.target.name] = evt.target.value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 }
 
-function submitEvent(event) {
-  event.preventDefault();
-  if (input.value === '' || textarea.value === '') {
-    alert('Somthing wrong with email or message!');
+function submitEvent(evt) {
+  evt.preventDefault();
+  if (form.elements.email.value === '' || form.elements.message.value === '') {
+    alert('Please, fill in the form fields!');
   } else {
-    console.log(event.currentTarget);
-    console.log(formData);
+    console.log('The formData: ', formData);
     localStorage.removeItem(STORAGE_KEY);
-    input.value = '';
-    textarea.value = '';
+    evt.currentTarget.reset();
   }
 }
 
 function inputData() {
-  if (localStorage.getItem(STORAGE_KEY)) {
-    console.log('Yahoo! Data in local storage was founded!');
+  const storageData = localStorage.getItem(STORAGE_KEY);
+  if (storageData) {
+    console.log('Data in local storage was found!');
     const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
     console.log('savedData: ', savedData);
-    input.value = savedData.email;
-    textarea.value = savedData.message;
+    form.elements.email.value = savedData.email;
+    form.elements.message.value = savedData.message;
+    formData.email = savedData.email;
+    formData.message = savedData.message;
   } else {
-    input.value = '';
-    textarea.value = '';
-    console.log('There is not any data in the local storage');
+    console.log('There is no data in the storage!');
   }
 }
